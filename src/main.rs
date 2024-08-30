@@ -40,12 +40,13 @@ enum Commands {
     }
 }
 
-fn get_api_key(config_file: Option<String>) -> Option<String> {
+fn get_api_key(user_config: Option<String>) -> Option<String> {
+    // List of potential config files to try
     let mut file_list: Vec<String> = vec![];
 
 
     // First check user supplied path, if any.
-    if let Some(config) = config_file {
+    if let Some(config) = user_config {
         file_list.push(config)
     }
 
