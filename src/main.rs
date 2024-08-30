@@ -1,6 +1,7 @@
 mod types;
 
 use clap::{Parser, Subcommand};
+use ini::Ini;
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 use std::error;
@@ -24,6 +25,8 @@ impl error::Error for HttpError {}
 #[command(version, about, long_about = None)]
 struct Cli {
     #[arg(short, long)]
+    config: Option<String>,
+    #[arg(short, long)]
     system: Option<String>,
     #[command(subcommand)]
     command: Option<Commands>,
@@ -37,12 +40,56 @@ enum Commands {
     }
 }
 
+fn get_api_key(config_file: Option<String>) -> Option<String> {
+    let mut file_list: Vec<String> = vec![];
+
+
+    // First check user supplied path, if any.
+    if let Some(config) = config_file {
+        file_list.push(config)
+    }
+
+    // default path is ~/.config/openai.ini
+    match home::home_dir() {
+        Some(mut path) => {
+            if !path.as_os_str().is_empty() {
+                file_list.push(path.join(".config").join("openai.ini").as_os_str().to_string_lossy().to_string());
+            }
+        }
+        None => {}
+    }
+
+    for file in file_list.iter() {
+        match Ini::load_from_file(&file) {
+            Ok(conf) => {
+                if let Some(key) = conf.get_from(Some("openai"), "api_key") {
+                    return Some(key.to_string());
+                }
+            }
+            Err(_) => {}
+        }
+    }
+
+    // Last chance
+    match env::var("OPENAI_API_KEY") {
+        Ok(key) => { Some(key) }
+        Err(_) => { None }
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Load OpenAI API key from environment variable
-    let api_key = env::var("OPENAI_API_KEY")?;
-
     let cli = Cli::parse();
+
+    // Load OpenAI API key from environment variable
+    let api_key = match get_api_key(cli.config) {
+        Some(key) => key,
+        None => {
+            println!("Unable to find key");
+            std::process::exit(1);
+        }
+    };
+
     let system_string = cli.system.unwrap_or("You are friendly assistant".to_string());
 
     let mut rl = DefaultEditor::new()?;

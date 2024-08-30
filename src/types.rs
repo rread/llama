@@ -138,7 +138,7 @@ impl Display for ChatConfig {
         writeln!(f, "ChatConfig")?;
         writeln!(f, "model: {}", self.model)?;
         if let Some(logprobs) = self.logprobs {
-            writeln!(f, "logprobes:  {}", logprobs)?;
+            writeln!(f, "logprobs:  {}", logprobs)?;
         }
         if let Some(top_logprobs) = &self.top_logprobs {
             writeln!(f, "top_logprobs:  {}", top_logprobs)?;
@@ -200,7 +200,7 @@ impl Chat {
         self.add_message(Role::User, line);
         let request_body = RequestBody::new(&self.config, &self.message_history);
 
-        println!("{}", serde_json::to_string(&request_body)?);
+        // println!("{}", serde_json::to_string(&request_body)?);
 
         let response = self.client
             .post("https://api.openai.com/v1/chat/completions")
