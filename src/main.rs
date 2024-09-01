@@ -1,5 +1,5 @@
 mod types;
-Refmod errors;
+mod errors;
 
 
 use crate::errors::LlamaError;
