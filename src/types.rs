@@ -1,4 +1,4 @@
-use crate::HttpError;
+use crate::errors::LlamaError;
 use reqwest;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
@@ -82,7 +82,6 @@ pub enum Role {
     Assistant,
 }
 
-
 impl FromStr for Role {
     type Err = ();
     fn from_str(input: &str) -> Result<Self, Self::Err> {
@@ -103,6 +102,12 @@ impl Display for Role {
             Self::Assistant => write!(f, "assistant"),
         }
     }
+}
+
+#[derive(Deserialize, Clone, Default)]
+pub struct ServiceConfig {
+    pub api_key: String,
+    pub chat_url: String,
 }
 
 #[derive(Clone, Default)]
@@ -172,7 +177,7 @@ impl Display for ChatConfig {
 }
 #[derive(Clone, Default)]
 pub struct Chat {
-    api_key: String,
+    service_config: ServiceConfig,
     client: reqwest::Client,
     // system: String,
     message_history: Vec<Message>,
@@ -181,9 +186,9 @@ pub struct Chat {
 }
 
 impl Chat {
-    pub fn new(api_key: String, system: &str, config: ChatConfig) -> Chat {
+    pub fn new(service_config: ServiceConfig, system: &str, config: ChatConfig) -> Chat {
         Self {
-            api_key,
+            service_config,
             client: reqwest::Client::new(),
             // system: system.to_string(),
             message_history: vec![
@@ -196,15 +201,16 @@ impl Chat {
             ..Default::default()
         }
     }
-    pub async fn chat_with_gpt(&mut self, line: &str) -> crate::Result<Vec<ResponseChoice>> {
+    pub async fn chat_with_gpt(&mut self, line: &str) -> Result<Vec<ResponseChoice>, LlamaError> {
         self.add_message(Role::User, line);
         let request_body = RequestBody::new(&self.config, &self.message_history);
-
+        // let url = "https://api.perplexity.ai/chat/completions";
+        // let url = "https://api.openai.com/v1/chat/completions";
         // println!("{}", serde_json::to_string(&request_body)?);
 
         let response = self.client
-            .post("https://api.openai.com/v1/chat/completions")
-            .header("Authorization", format!("Bearer {}", self.api_key))
+            .post(self.service_config.chat_url.as_str())
+            .header("Authorization", format!("Bearer {}", self.service_config.api_key))
             .json(&request_body)
             .send()
             .await?;
@@ -222,8 +228,7 @@ impl Chat {
 
             Ok(response_body.choices)
         } else {
-            println!("Failed to get response from OpenAI API: {:?}", response.status());
-            Err(HttpError.into())
+            Err(LlamaError::Http(response.status()).into())
         }
     }
 
