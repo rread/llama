@@ -1,4 +1,4 @@
-use crate::errors::LlamaError;
+use crate::errors::OpaiError;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
@@ -191,7 +191,7 @@ impl Chat {
             ..Default::default()
         }
     }
-    pub async fn chat_with_gpt(&mut self, line: &str) -> Result<Vec<ResponseChoice>, LlamaError> {
+    pub async fn chat_with_gpt(&mut self, line: &str) -> Result<Vec<ResponseChoice>, OpaiError> {
         self.add_message(Role::User, line);
         let request_body = RequestBody::new(&self.config, &self.message_history);
         // let url = "https://api.perplexity.ai/chat/completions";
@@ -218,7 +218,7 @@ impl Chat {
 
             Ok(response_body.choices)
         } else {
-            Err(LlamaError::Http(response.status()).into())
+            Err(OpaiError::Http(response.status()).into())
         }
     }
 

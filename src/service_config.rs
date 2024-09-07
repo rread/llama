@@ -1,9 +1,9 @@
 use crate::chat::ServiceConfig;
-use crate::errors::LlamaError;
+use crate::errors::OpaiError;
 use ini::Ini;
 use std::env;
 
-fn load_service_config(file: String, service: Option<String>) -> Result<ServiceConfig, LlamaError> {
+fn load_service_config(file: String, service: Option<String>) -> Result<ServiceConfig, OpaiError> {
     let mut service_config = ServiceConfig::default();
     match Ini::load_from_file(&file) {
         Ok(config) => {

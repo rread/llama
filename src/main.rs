@@ -3,7 +3,7 @@ mod errors;
 mod service_config;
 mod chat;
 
-use crate::errors::LlamaError;
+use crate::errors::OpaiError;
 use clap::{Parser, Subcommand};
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
@@ -31,7 +31,7 @@ enum Commands {
 
 
 #[tokio::main]
-async fn main() -> Result<(), LlamaError> {
+async fn main() -> Result<(), OpaiError> {
     let cli = Cli::parse();
 
     // Load OpenAI API key from environment variable

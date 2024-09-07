@@ -4,7 +4,7 @@ use std::{error, io};
 // pub type Result<T> = std::result::Result<T, LlamaError>;
 
 #[derive(Debug, Display)]
-pub enum LlamaError {
+pub enum OpaiError {
     #[display("Http Error: {}", _0)]
     Http(reqwest::StatusCode),
     #[display("IO Error: {}", _0)]
@@ -18,28 +18,28 @@ pub enum LlamaError {
 }
 
 
-impl error::Error for LlamaError {}
+impl error::Error for OpaiError {}
 
-impl From<io::Error> for LlamaError {
+impl From<io::Error> for OpaiError {
     fn from(err: io::Error) -> Self {
-        LlamaError::Io(err)
+        OpaiError::Io(err)
     }
 }
 
-impl From<reqwest::Error> for LlamaError {
+impl From<reqwest::Error> for OpaiError {
     fn from(err: reqwest::Error) -> Self {
-        LlamaError::Network(err)
+        OpaiError::Network(err)
     }
 }
 
-impl From<ini::Error> for LlamaError {
+impl From<ini::Error> for OpaiError {
     fn from(err: ini::Error) -> Self {
-        LlamaError::Config(err)
+        OpaiError::Config(err)
     }
 }
 
-impl From<rustyline::error::ReadlineError> for LlamaError {
+impl From<rustyline::error::ReadlineError> for OpaiError {
     fn from(err: rustyline::error::ReadlineError) -> Self {
-        LlamaError::CliError(err)
+        OpaiError::CliError(err)
     }
 }
