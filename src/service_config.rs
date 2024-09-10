@@ -1,30 +1,36 @@
-use crate::chat::ServiceConfig;
 use crate::errors::OpaiError;
 use ini::Ini;
 use std::env;
+use serde::Deserialize;
+
+#[derive(Deserialize, Clone, Default)]
+pub struct ServiceConfig {
+    pub api_key: String,
+    pub chat_url: String,
+}
 
 fn load_service_config(file: String, service: Option<String>) -> Result<ServiceConfig, OpaiError> {
-    let mut service_config = ServiceConfig::default();
+    let mut api_key = "".to_string();
+    let mut chat_url= "".to_string();
     match Ini::load_from_file(&file) {
         Ok(config) => {
             if let Some(key) = config.get_from(Some(service.clone().unwrap_or("openai".to_string())), "api_key") {
-                service_config.api_key = key.to_string();
+                api_key = key.to_string();
             }
             if let Some(url) = config.get_from(Some(service.clone().unwrap_or("openai".to_string())), "chat_url") {
-                service_config.chat_url = url.to_string();
+                chat_url = url.to_string();
             }
         }
         Err(e) => return Err(e.into()),
     }
 
-    Ok(service_config)
+    Ok(ServiceConfig { api_key, chat_url })
 }
 
 pub fn find_service_config(user_config: Option<String>, service: Option<String>) -> Option<ServiceConfig> {
     // List of potential config files to try
     let mut file_list: Vec<String> = vec![];
-
-
+    
     // First check user supplied path, if any.
     if let Some(config) = user_config {
         file_list.push(config)
@@ -39,7 +45,15 @@ pub fn find_service_config(user_config: Option<String>, service: Option<String>)
         }
         None => {}
     }
-
+    
+    // Also check current directory
+    match env::current_dir() {
+        Ok(path) => {
+            file_list.push(path.join("openai.ini").as_os_str().to_string_lossy().to_string());
+        },
+        Err(_) => {}
+    }
+    
     for file in file_list.iter() {
         match load_service_config(file.clone(), service.clone()) {
             Ok(conf) => {

@@ -1,12 +1,9 @@
-mod types;
-mod errors;
-mod service_config;
-mod chat;
-
-use crate::errors::OpaiError;
+use opai::errors::OpaiError;
 use clap::{Parser, Subcommand};
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
+use opai::ChatConfig;
+
 // Clap derived cli processor
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -35,7 +32,7 @@ async fn main() -> Result<(), OpaiError> {
     let cli = Cli::parse();
 
     // Load OpenAI API key from environment variable
-    let service_config = match service_config::find_service_config(cli.config, cli.service) {
+    let service_config = match opai::service_config::find_service_config(cli.config, cli.service) {
         Some(key) => key,
         None => {
             println!("Unable to find api key.");
@@ -50,11 +47,11 @@ async fn main() -> Result<(), OpaiError> {
         println!("No previous history");
     }
 
-    let mut config = chat::ChatConfig::new();
+    let mut config: ChatConfig = opai::ChatConfig::new();
     config.model = "gpt-4o-mini".to_owned();
     config.temperature = Some(0.5);
 
-    let mut chat = chat::Chat::new(service_config, &system_string, config);
+    let mut chat = opai::Chat::new(service_config, &system_string, config);
 
     loop {
         let readline = rl.readline(">> ");

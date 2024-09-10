@@ -1,6 +1,7 @@
 use crate::errors::OpaiError;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
+use crate::service_config::ServiceConfig;
 
 #[serde_with::skip_serializing_none]
 #[derive(Serialize, Default)]
@@ -83,20 +84,15 @@ pub enum Role {
 }
 
 impl Display for Role {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::System => write!(f, "system"),
-            Self::User => write!(f, "user"),
-            Self::Assistant => write!(f, "assistant"),
+            Self::System => write!(fmt, "system"),
+            Self::User => write!(fmt, "user"),
+            Self::Assistant => write!(fmt, "assistant"),
         }
     }
 }
 
-#[derive(Deserialize, Clone, Default)]
-pub struct ServiceConfig {
-    pub api_key: String,
-    pub chat_url: String,
-}
 
 #[derive(Clone, Default)]
 pub struct ChatConfig {
@@ -128,38 +124,38 @@ impl ChatConfig {
 }
 
 impl Display for ChatConfig {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        writeln!(f, "ChatConfig")?;
-        writeln!(f, "model: {}", self.model)?;
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+        writeln!(fmt, "ChatConfig")?;
+        writeln!(fmt, "model: {}", self.model)?;
         if let Some(logprobs) = self.logprobs {
-            writeln!(f, "logprobs:  {}", logprobs)?;
+            writeln!(fmt, "logprobs:  {}", logprobs)?;
         }
         if let Some(top_logprobs) = &self.top_logprobs {
-            writeln!(f, "top_logprobs:  {}", top_logprobs)?;
+            writeln!(fmt, "top_logprobs:  {}", top_logprobs)?;
         }
         if let Some(max_tokens) = &self.max_tokens {
-            writeln!(f, "max_tokens:  {}", max_tokens)?;
+            writeln!(fmt, "max_tokens:  {}", max_tokens)?;
         }
         if let Some(n) = &self.n {
-            writeln!(f, "n:  {}", n)?;
+            writeln!(fmt, "n:  {}", n)?;
         }
         if let Some(presence_penalty) = &self.presence_penalty {
-            writeln!(f, "presence_penalty: {}", presence_penalty)?;
+            writeln!(fmt, "presence_penalty: {}", presence_penalty)?;
         }
         if let Some(seed) = &self.seed {
-            writeln!(f, "seed:  {}", seed)?;
+            writeln!(fmt, "seed:  {}", seed)?;
         }
         if let Some(stop) = &self.stop {
-            writeln!(f, "stop: {}", stop)?;
+            writeln!(fmt, "stop: {}", stop)?;
         }
         if let Some(temperature) = &self.temperature {
-            writeln!(f, "temperature: {}", temperature)?;
+            writeln!(fmt, "temperature: {}", temperature)?;
         }
         if let Some(top_p) = &self.top_p {
-            writeln!(f, "top_p: {}", top_p)?;
+            writeln!(fmt, "top_p: {}", top_p)?;
         }
         if let Some(parallel_tool_calls) = &self.parallel_tool_calls {
-            writeln!(f, "parallel_tool_calls: {}", parallel_tool_calls)?;
+            writeln!(fmt, "parallel_tool_calls: {}", parallel_tool_calls)?;
         }
         Ok(())
     }
