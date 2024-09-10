@@ -1,4 +1,4 @@
-# llama
+# opai
 
 Yet another cli for LLMs in Rust.
 
